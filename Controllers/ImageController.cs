@@ -18,14 +18,20 @@ namespace ImageMongoDb.Controllers
     public class ImageController : Controller
     {
 
-   
-       
+        private readonly ImageService _imageService;
+
+        public ImageController(ImageService imageService)
+
+        {
+            _imageService = imageService;
+        }
+
         public ActionResult Index()
         {
             return View();
         }
 
-        public ActionResult Index1()
+        public ActionResult GetImageList()
         {
             return View();
         }
@@ -36,7 +42,7 @@ namespace ImageMongoDb.Controllers
 
        
         [HttpGet]
-        public JsonResult GetData()
+        public async Task<JsonResult> GetData()
         {
 
             //var res = from mod in _genericRepository.GetAll()
@@ -44,8 +50,8 @@ namespace ImageMongoDb.Controllers
             //res.AsEnumerable<ImageToDBW>()
             //  return Json(_genericRepository.GetAll(), JsonRequestBehavior.AllowGet);
 
-            var collection = GetCollection();
-            var imgdoc = collection.Find(new BsonDocument()).ToList();
+           // var collection = GetCollection();
+           // var imgdoc = collection.Find(new BsonDocument()).ToList();
             //List<Image> imageList = new List<Image>();
             //foreach (var img in imagelist)
             //{
@@ -57,6 +63,7 @@ namespace ImageMongoDb.Controllers
 
             //    });
             //}
+            var imgdoc = await _imageService.GetAsync();
 
             return Json(imgdoc);
            
@@ -69,18 +76,19 @@ namespace ImageMongoDb.Controllers
         }
 
             public async Task<ActionResult> RetrieveImageFile(string id)
-        {
+         {
 
 
-           // var filter = Builders<ImageDocument>.Filter.Eq("_id", id);
-            var collection = GetCollection();
+            // var filter = Builders<ImageDocument>.Filter.Eq("_id", id);
+            //  var collection = GetCollection();
 
 
 
 
             //  var imageDoc = await collection.FindAsync<ImageDocument>(filter).ConfigureAwait(false);
-            var imageDoc = collection.Find(
-                   q => q.Id == id).FirstOrDefault();
+            //var imageDoc = collection.Find(
+            //       q => q.Id == id).FirstOrDefault();
+            var imageDoc = await _imageService.GetAsync(id);
             byte[] cover = imageDoc.ContentImage;
             if (cover != null)
             {
@@ -145,30 +153,31 @@ namespace ImageMongoDb.Controllers
                         string s = Convert.ToBase64String(fileBytes);
                         imagedocument.ContentImage = fileBytes;
                     }
-                        //   imagedocument.ContentImage = thePictureAsBytes;
-                        // Some browsers send file names with full path. This needs to be stripped.
-                        //var fileName = Path.GetFileName(file.FileName);
-                        //var physicalPath = Path.Combine(Server.MapPath("~/App_Data"), fileName);
+                    //   imagedocument.ContentImage = thePictureAsBytes;
+                    // Some browsers send file names with full path. This needs to be stripped.
+                    //var fileName = Path.GetFileName(file.FileName);
+                    //var physicalPath = Path.Combine(Server.MapPath("~/App_Data"), fileName);
 
-                        //   _imageRepository.Add(imagedocument);
+                    //   _imageRepository.Add(imagedocument);
 
-                        //// it will be null
-                        //var testProduct = await _imageRepository.GetById(imagedocument.Id);
+                    //// it will be null
+                    //var testProduct = await _imageRepository.GetById(imagedocument.Id);
 
-                        // If everything is ok then:
-                        //      await _uow.Commit();
+                    // If everything is ok then:
+                    //      await _uow.Commit();
 
-                        // The product will be added only after commit
-                        //   testProduct = await _productRepository.GetById(product.Id);
+                    // The product will be added only after commit
+                    //   testProduct = await _productRepository.GetById(product.Id);
 
-                        //  return Ok(testProduct);
-                        // The files are not actually saved in this demo
-                        // file.SaveAs(physicalPath);
+                    //  return Ok(testProduct);
+                    // The files are not actually saved in this demo
+                    // file.SaveAs(physicalPath);
 
-                        //var id = new ObjectId();
-                        //imagedocument.Id = Convert.ToString(id);
-                        var collection = GetCollection();
-                    collection.InsertOne(imagedocument);
+                    //var id = new ObjectId();
+                    //imagedocument.Id = Convert.ToString(id);
+                    //    var collection = GetCollection();
+                    //collection.InsertOne(imagedocument);
+                    await _imageService.CreateAsync(imagedocument);
                 }
             }
 

@@ -24,10 +24,12 @@ namespace ImageMongoDb
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ImageDatabaseSettings>(Configuration.GetSection("ImageDatabase"));
             services.AddControllersWithViews();
+            services.AddSingleton<ImageService>();
             // Configure the persistence in another layer
-        //    MongoDbPersistence.Configure();
-          //  RegisterServices(services);
+            //    MongoDbPersistence.Configure();
+            //  RegisterServices(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

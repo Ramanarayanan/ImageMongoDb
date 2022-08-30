@@ -28,11 +28,16 @@ namespace ImageMongoDb.Controllers
 
         public ActionResult Index()
         {
+            var baseUrl = string.Format("{0}://{1}", HttpContext.Request.Scheme, HttpContext.Request.Host);
+            ViewBag.baseUrl = baseUrl;
             return View();
         }
 
         public ActionResult GetImageList()
         {
+            //var url = string.Format("{0}://{1}{2}{3}", HttpContext.Request.Scheme, HttpContext.Request.Host, HttpContext.Request.Path, HttpContext.Request.QueryString);
+            var baseUrl = string.Format("{0}://{1}", HttpContext.Request.Scheme, HttpContext.Request.Host);
+            ViewBag.baseUrl = baseUrl;
             return View();
         }
         public ActionResult GetImages()

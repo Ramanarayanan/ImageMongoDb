@@ -97,10 +97,12 @@
 </script>-->
 <script>
         $(document).ready(function () {
-
-            $.get("https://localhost:5001/Image/GetData")
+            var baseUrl = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.baseUrl) as String)
+          
+                //alert(JSON.stringify(baseUrl));
+                $.get(baseUrl+"/Image/GetData")
                 .done(function (data) {
-                    alert(JSON.stringify(data));
+                 //   alert(JSON.stringify(data));
                     $("#grid").kendoGrid({
                         dataSource: {
                             data: data,

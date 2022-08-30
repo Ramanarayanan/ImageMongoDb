@@ -35,6 +35,7 @@
 
     <script>
         $(document).ready(function () {
+               var baseUrl = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.baseUrl) as String)
             $("#fileTypes").kendoMultiSelect({
                 dataTextField: "text",
                 dataValueField: "value",
@@ -75,8 +76,8 @@
 
                 $("#files").kendoUpload({
                     async: {
-                     
-                        saveUrl: "https://localhost:5001/image/chunksave",
+
+                        saveUrl: baseUrl+"/image/chunksave",
                         removeUrl: "remove",
                         autoUpload: false
                     },

@@ -1,4 +1,8 @@
 # Docker
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: 
 # Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 

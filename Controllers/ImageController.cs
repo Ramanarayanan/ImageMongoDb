@@ -18,13 +18,28 @@ namespace ImageMongoDb.Controllers
     public class ImageController : Controller
     {
 
-   
-       
+        private readonly ImageService _imageService;
+
+        public ImageController(ImageService imageService)
+
+        {
+            _imageService = imageService;
+        }
+
         public ActionResult Index()
         {
+            var baseUrl = string.Format("{0}://{1}", HttpContext.Request.Scheme, HttpContext.Request.Host);
+            ViewBag.baseUrl = baseUrl;
             return View();
         }
 
+        public ActionResult GetImageList()
+        {
+            //var url = string.Format("{0}://{1}{2}{3}", HttpContext.Request.Scheme, HttpContext.Request.Host, HttpContext.Request.Path, HttpContext.Request.QueryString);
+            var baseUrl = string.Format("{0}://{1}", HttpContext.Request.Scheme, HttpContext.Request.Host);
+            ViewBag.baseUrl = baseUrl;
+            return View();
+        }
         public ActionResult GetImages()
         {
             return View();
@@ -32,7 +47,7 @@ namespace ImageMongoDb.Controllers
 
        
         [HttpGet]
-        public JsonResult GetData()
+        public async Task<JsonResult> GetData()
         {
 
             //var res = from mod in _genericRepository.GetAll()
@@ -40,8 +55,8 @@ namespace ImageMongoDb.Controllers
             //res.AsEnumerable<ImageToDBW>()
             //  return Json(_genericRepository.GetAll(), JsonRequestBehavior.AllowGet);
 
-            var collection = GetCollection();
-            var imgdoc = collection.Find(new BsonDocument()).ToList();
+           // var collection = GetCollection();
+           // var imgdoc = collection.Find(new BsonDocument()).ToList();
             //List<Image> imageList = new List<Image>();
             //foreach (var img in imagelist)
             //{
@@ -53,8 +68,9 @@ namespace ImageMongoDb.Controllers
 
             //    });
             //}
+            var imgdoc = await _imageService.GetAsync();
 
-            return Json(imgdoc.ToJson());
+            return Json(imgdoc);
            
         }
 
@@ -64,18 +80,21 @@ namespace ImageMongoDb.Controllers
             return View();
         }
 
-            public async Task<ActionResult> RetrieveImageFile(int id)
-        {
+            public async Task<ActionResult> RetrieveImageFile(string id)
+         {
 
 
-            var filter = Builders<BsonDocument>.Filter.Eq("id", id);
-            var collection = GetCollection();
-           
-         
-            
-           
-            var imageDoc = await collection.FindAsync<ImageDocument>(filter).ConfigureAwait(false);
-            byte[] cover = imageDoc.FirstOrDefault<ImageDocument>().ContentImage;
+            // var filter = Builders<ImageDocument>.Filter.Eq("_id", id);
+            //  var collection = GetCollection();
+
+
+
+
+            //  var imageDoc = await collection.FindAsync<ImageDocument>(filter).ConfigureAwait(false);
+            //var imageDoc = collection.Find(
+            //       q => q.Id == id).FirstOrDefault();
+            var imageDoc = await _imageService.GetAsync(id);
+            byte[] cover = imageDoc.ContentImage;
             if (cover != null)
             {
                 return File(cover, "image/jpg");
@@ -132,25 +151,38 @@ namespace ImageMongoDb.Controllers
                     //get the bytes from the content stream of the file
                     byte[] thePictureAsBytes = new byte[file.Length];
                    ImageDocument imagedocument = new ImageDocument();
-                 //   imagedocument.ContentImage = thePictureAsBytes;
+                    using (var ms = new MemoryStream())
+                    {
+                        file.CopyTo(ms);
+                        var fileBytes = ms.ToArray();
+                        string s = Convert.ToBase64String(fileBytes);
+                        imagedocument.ContentImage = fileBytes;
+                    }
+                    //   imagedocument.ContentImage = thePictureAsBytes;
                     // Some browsers send file names with full path. This needs to be stripped.
                     //var fileName = Path.GetFileName(file.FileName);
                     //var physicalPath = Path.Combine(Server.MapPath("~/App_Data"), fileName);
 
-                 //   _imageRepository.Add(imagedocument);
+                    //   _imageRepository.Add(imagedocument);
 
                     //// it will be null
                     //var testProduct = await _imageRepository.GetById(imagedocument.Id);
 
                     // If everything is ok then:
-              //      await _uow.Commit();
+                    //      await _uow.Commit();
 
                     // The product will be added only after commit
-                 //   testProduct = await _productRepository.GetById(product.Id);
+                    //   testProduct = await _productRepository.GetById(product.Id);
 
-                  //  return Ok(testProduct);
+                    //  return Ok(testProduct);
                     // The files are not actually saved in this demo
                     // file.SaveAs(physicalPath);
+
+                    //var id = new ObjectId();
+                    //imagedocument.Id = Convert.ToString(id);
+                    //    var collection = GetCollection();
+                    //collection.InsertOne(imagedocument);
+                    await _imageService.CreateAsync(imagedocument);
                 }
             }
 
@@ -237,7 +269,7 @@ namespace ImageMongoDb.Controllers
                     var id = new ObjectId();
                     imagedocument.Id = Convert.ToString(id);
                     var collection = GetCollection();
-                    collection.InsertOne(imagedocument.ToBsonDocument());
+                    collection.InsertOne(imagedocument);
                 }
             }
 
@@ -256,12 +288,17 @@ namespace ImageMongoDb.Controllers
                 select string.Format("{0} ({1} bytes)", Path.GetFileName(a.FileName), a.Length);
         }
 
-        private IMongoCollection<BsonDocument> GetCollection()
+        private IMongoCollection<ImageDocument> GetCollection()
 
         {
-            MongoClient dbClient = new MongoClient("mongodb://api_user:api1234@localhost:27017/api_prod_db");
-            var database = dbClient.GetDatabase("imageMongoDb");
-            var collection = database.GetCollection<BsonDocument>("Images");
+            var client = new MongoClient("mongodb://localhost:27020");
+            var database = client.GetDatabase("imageMongoDb");
+            //_questions = database.GetCollection<ImageModel>("Images");
+
+
+            //MongoClient dbClient = new MongoClient("mongodb://api_user:api1234@localhost:27017/api_prod_db");
+            //var database = dbClient.GetDatabase("imageMongoDb");
+            var collection = database.GetCollection<ImageDocument>("Images");
             return collection;
         }
     }

@@ -15,5 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image1
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)           
+      run: |
+           dockername = my-image-name:$(date +%s)
+           docker build . --file Dockerfile --tag $dockername
+        
+    - name: Artifact upload
+    - uses: actions/upload-artifact@v3
+      with:
+        name: my-artifact
+        path: path/to/artifact/dockername
    

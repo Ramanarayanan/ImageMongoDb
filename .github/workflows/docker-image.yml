@@ -17,9 +17,4 @@ jobs:
     - name: Build the Docker image1
       run:  docker build . --file Dockerfile --tag my-image-name:$(date +%s)      
     
-    - name: Artifact upload
-    - uses: actions/upload-artifact@v3
-      with:
-        name: my-artifact
-        path: path/to/artifact/dockername
-   
+    
